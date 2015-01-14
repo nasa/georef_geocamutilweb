@@ -104,7 +104,7 @@ def imageCoordToEcef(cameraLonLatAlt, pixelCoord, opticalCenter, focalLength):
     earth = Sphere(earthCenter, EARTH_RADIUS_METERS)
     t = earth.intersect(ray)
     
-    if t != None:
+    if t != float("inf"):
         # convert t to ecef coords
         ecefCoords = ray.start + t*ray.dir
         return pointToTuple(ecefCoords)

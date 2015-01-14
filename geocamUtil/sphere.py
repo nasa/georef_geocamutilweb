@@ -50,7 +50,7 @@ class Sphere(object):
             t0, t1 = min(t0, t1), max(t0, t1)
             if t1 >= 0:
                 return t1 if t0 < 0 else t0
-        return None
+        return float("inf")
 
     def __repr__(self):
         return "Sphere(%s, %.3f)" % (str(self.center), self.radius)
