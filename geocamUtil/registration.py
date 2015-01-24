@@ -1,4 +1,5 @@
 import numpy as np
+import urllib2
 from numpy import linalg as LA
 
 import PIL.Image
@@ -111,6 +112,46 @@ def imageCoordToEcef(cameraLonLatAlt, pixelCoord, opticalCenter, focalLength):
     else: 
         return None
 
+
+def getCenterPoint(width, height, mission, roll, frame):
+    """
+    Center point is only available if the image has mission, roll, and frame.
+    """
+    url = "http://eol.jsc.nasa.gov/GeoCam/PhotoInfo.pl?photo=%s-%s-%s" % (mission, roll, frame)
+    urlpath = urllib2.urlopen(url)
+    string = urlpath.read().decode('utf-8') 
+    params = string.split('\n')
+    paramsDict = {}
+    for param in params:
+        paramsDict[param.split(':')[0]] = param.split(':')[-1]
+
+    sensorSize = (.036,.0239)  #TODO: get this value from the camera type!
+    latitude = None
+    longitude = None
+    Altitude = None
+    initialFocalLength = None
+    
+    for key, value in paramsDict.items():
+         if 'latitude' in key:
+             latitude = float(value.split(',')[0]) 
+             longitude = float(value.split(',')[1]) 
+         elif 'altitude' in key:
+             altitude = float(value) * 1609.34  # convert miles to meters
+         elif 'Focal length' in key:
+             print "focal length"
+             print value
+             initialFocalLength = float(value)
+             
+    focalLength = getAccurateFocalLengths([width, height], initialFocalLength, sensorSize)
+    longLatAlt = (longitude, latitude, altitude)
+    sensorSize = (.036,.0239)
+    centerCoords = [width / 2.0, height / 2.0]
+    opticalCenter = (int(width / 2.0) , int(height / 2.0))
+    
+    centerPointEcef = imageCoordToEcef(longLatAlt, centerCoords, opticalCenter, focalLength)       
+    centerPointLonLatAlt = transformEcefToLonLatAlt(centerPointEcef)
+    return {"lon": centerPointLonLatAlt[0], "lat": centerPointLonLatAlt[1], "alt": centerPointLonLatAlt[2]}
+    
 
 # def getBboxFromImageCorners(image):
 #     """
