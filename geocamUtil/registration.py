@@ -1,5 +1,6 @@
 import numpy as np
 import urllib2
+import logging
 from numpy import linalg as LA
 
 import PIL.Image
@@ -12,32 +13,13 @@ from geocamTiePoint import transform, settings
 
 from geocamUtil.geom3 import Vector3, Point3, Ray3
 from geocamUtil.sphere import Sphere
+from geocamUtil.imageInfo import getIssImageInfo
 from geocamUtil.geomath import EARTH_RADIUS_METERS, transformLonLatAltToEcef, transformEcefToLonLatAlt
 
 #####################################################
 # Utility functions for image registration in 
 # geocamspace geoRef ground tool.
 #####################################################
-
-def getAccurateFocalLengths(imageSize, focalLength, sensorSize):
-    """
-    Parameters: image size x,y (pixels), focalLength (meters), sensorSize x,y (meters)
-    
-    Focal length listed on the image exif is unitless...
-    We need focal length in pixels / meters. 
-    Therefore, we scale the exif focal length by number of 
-    pixels per meter on the actual CCD sensor.
-    """
-    w_s = sensorSize[0]  # in meters
-    h_s = sensorSize[0]
-    
-    w_i = imageSize[0]  # in pixels
-    h_i = imageSize[1]
-    
-    f = focalLength  # unit less
-    
-    focalLengthPixelsPerMeter = (w_i / w_s * f, h_i / h_s * f)
-    return focalLengthPixelsPerMeter    
 
 
 def degreesToRadians(degrees):
@@ -117,34 +99,19 @@ def getCenterPoint(width, height, mission, roll, frame):
     """
     Center point is only available if the image has mission, roll, and frame.
     """
-    url = "http://eol.jsc.nasa.gov/GeoCam/PhotoInfo.pl?photo=%s-%s-%s" % (mission, roll, frame)
-    urlpath = urllib2.urlopen(url)
-    string = urlpath.read().decode('utf-8') 
-    params = string.split('\n')
-    paramsDict = {}
-    for param in params:
-        paramsDict[param.split(':')[0]] = param.split(':')[-1]
-
-    sensorSize = (.036,.0239)  #TODO: get this value from the camera type!
-    latitude = None
-    longitude = None
-    Altitude = None
-    initialFocalLength = None
-    
-    for key, value in paramsDict.items():
-         if 'latitude' in key:
-             latitude = float(value.split(',')[0]) 
-             longitude = float(value.split(',')[1]) 
-         elif 'altitude' in key:
-             altitude = float(value) * 1609.34  # convert miles to meters
-         elif 'Focal length' in key:
-             print "focal length"
-             print value
-             initialFocalLength = float(value)
+    imageInfo = getIssImageInfo(mission, roll, frame)
+    try: 
+        latitude = imageInfo['latitude']
+        longitude = imageInfo['longitude']
+        altitude = imageInfo['altitude']
+        focalLength = imageInfo['focalLength']
+        sensorSize = imageInfo['sensorSize']
+    except Exception as e:
+        errorMsg = "Failed to get ISS image info from ISS MRF. " + str(e)
+        logging.error(errorMsg)
+        print errorMsg
              
-    focalLength = getAccurateFocalLengths([width, height], initialFocalLength, sensorSize)
     longLatAlt = (longitude, latitude, altitude)
-    sensorSize = (.036,.0239)
     centerCoords = [width / 2.0, height / 2.0]
     opticalCenter = (int(width / 2.0) , int(height / 2.0))
     
