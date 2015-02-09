@@ -2,6 +2,7 @@ import os
 import PIL
 import urllib2
 import logging
+import PIL.Image
 from geocamTiePoint import settings
 from geocamUtil.ErrorJSONResponse import ErrorJSONResponse, checkIfErrorJSONResponse
 
@@ -157,10 +158,9 @@ def getIssImageInfo(mission, roll, frame, width=None, height=None):
          elif 'altitude' in key:
              altitude = float(value) * 1609.34  # convert miles to meters
          elif 'Focal length' in key:
-             print "focal length"
-             print value
              initialFocalLength = float(value)
     focalLength = getAccurateFocalLengths([width, height], initialFocalLength, sensorSize)
-    return {'latitude': latitude, 'longitude':  longitude, 'altitude': altitude, 
+    focalLength = [round(focalLength[0],2), round(focalLength[1],2)]
+    return {'latitude': float(latitude), 'longitude':  float(longitude), 'altitude': float(altitude), 
             'focalLength': focalLength, 'sensorSize': sensorSize,
             'width': width, 'height': height}

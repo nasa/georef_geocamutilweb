@@ -9,7 +9,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from geocamTiePoint import transform, settings
+from geocamTiePoint import settings
 
 from geocamUtil.geom3 import Vector3, Point3, Ray3
 from geocamUtil.sphere import Sphere
@@ -119,24 +119,3 @@ def getCenterPoint(width, height, mission, roll, frame):
     centerPointLonLatAlt = transformEcefToLonLatAlt(centerPointEcef)
     return {"lon": centerPointLonLatAlt[0], "lat": centerPointLonLatAlt[1], "alt": centerPointLonLatAlt[2]}
     
-
-# def getBboxFromImageCorners(image):
-#     """
-#     Calculate 3d world position of four image corners
-#     given image and camera params.
-#     """
-#     corner1 = [0,0]
-#     corner2 = [image.width, 0]
-#     corner3 = [0, image.height]
-#     corner4 = [image.width, image.height]
-# 
-#     # this returns None when there is no intersection...
-#     corner1_ecef = imageCoordToEcef(image.cameraLonLatAlt, corner1, image.opticalCenter, image.focalLength)
-#     corner2_ecef = imageCoordToEcef(image.cameraLonLatAlt, corner2, image.opticalCenter, image.focalLength)
-#     corner3_ecef = imageCoordToEcef(image.cameraLonLatAlt, corner3, image.opticalCenter, image.focalLength)
-#     corner4_ecef = imageCoordToEcef(image.cameraLonLatAlt, corner4, image.opticalCenter, image.focalLength)
-#     print corner1_ecef
-#     print corner2_ecef
-#     print corner3_ecef
-#     print corner4_ecef
-#     return [corner1_ecef, corner2_ecef, corner3_ecef, corner4_ecef]
