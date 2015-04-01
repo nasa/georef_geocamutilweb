@@ -151,14 +151,19 @@ def getIssImageInfo(mission, roll, frame, width=None, height=None):
     initialFocalLength = None
     sensorSize = (.036,.0239)  #TODO: figure out a way to not hard code this.
     
+    print paramsDict.items()
+#     [(u'Nadir latitude,longitude in degrees', u' 27.2,26.3'), (u'', u''), (u'Focal length in millimeters', u' 200'), (u'Photo', u' ISS039-E-20429'), (u'Sun azimuth', u' 258'), (u'Center point latitude,longitude in degrees', u' '), (u'Camera', u' 2007945'), (u'Spacecraft altitude in nautical miles', u' 224'), (u'Sun elevation angle', u' 62')]
+
+    
     for key, value in paramsDict.items():
-         if 'latitude' in key:
-             latitude = float(value.split(',')[0]) 
-             longitude = float(value.split(',')[1]) 
+         if 'Nadir latitude,longitude in degrees' in key:
+             value = value.strip()
+             latitude = float(value.split(',')[0].strip()) 
+             longitude = float(value.split(',')[1].strip()) 
          elif 'altitude' in key:
-             altitude = float(value) * 1609.34  # convert miles to meters
+             altitude = float(value.strip()) * 1609.34  # convert miles to meters
          elif 'Focal length' in key:
-             initialFocalLength = float(value)
+             initialFocalLength = float(value.strip())
     focalLength = getAccurateFocalLengths([width, height], initialFocalLength, sensorSize)
     focalLength = [round(focalLength[0],2), round(focalLength[1],2)]
     return {'latitude': float(latitude), 'longitude':  float(longitude), 'altitude': float(altitude), 
