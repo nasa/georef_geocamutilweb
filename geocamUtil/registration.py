@@ -95,6 +95,14 @@ def imageCoordToEcef(cameraLonLatAlt, pixelCoord, opticalCenter, focalLength):
         return None
 
 
+def ecefToImageCoord(pixelCoord, opticalCenter, focalLength):
+    """
+    Transforms image pixel coordinates to ecef.
+    """
+    # create a Plane object representing the image plane
+    return None
+
+
 def getCenterPoint(width, height, mission, roll, frame):
     """
     Center point is only available if the image has mission, roll, and frame.

@@ -1,4 +1,6 @@
 # Based on https://github.com/phire/Python-Ray-tracer/blob/master/sphere.py
+# http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
+# Intersect code from https://gist.github.com/rossant/6046463   
 
 """A ray-traceable sphere is a sphere with a given
    centre and radius and a given surface material.
@@ -9,10 +11,7 @@
 
 from geom3 import Vector3, Point3, Ray3, dot, unit, length
 from math import sqrt
-
-# Reference: 
-# http://www.lighthouse3d.com/tutorials/maths/ray-sphere-intersection/
-# Intersect code from https://gist.github.com/rossant/6046463    
+ 
 
 class Sphere(object):
     """A ray-traceable sphere"""
