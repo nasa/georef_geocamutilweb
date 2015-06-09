@@ -43,10 +43,11 @@ def pixelToVector(opticalCenter, focalLength, pixelCoord):
     return normDir
 
 
-def rotMatrixFromCameraToEcef(longitude, camPoseEcef):
+def rotMatrixFromEcefToCamera(longitude, camPoseEcef):
     """
-    Given the camera pose in ecef and camera longitude, provides rotation matrix for 
-    transforming a vector from camera frame to ecef frame.
+    This rotation matrix aligns the ecef frame to a camera frame where z is the 
+    nadir vector pointing towards earth (thumb), x is vector along ISS orbit (index finger), 
+    and y is downward vector.
     """
     longitude = degreesToRadians(longitude)
     c1 = np.array([-1 * np.sin(longitude), np.cos(longitude), 0])
@@ -55,7 +56,16 @@ def rotMatrixFromCameraToEcef(longitude, camPoseEcef):
     c2 = np.cross(c3, c1)
     c2 = c2 / LA.norm(c2)  # normalize
     rotMatrix = np.matrix([c1, c2, c3])
-    return np.transpose(rotMatrix)
+    return rotMatrix
+
+
+def rotMatrixOfCameraInEcef(longitude, camPoseEcef):
+    """
+    Given the camera pose in ecef and camera longitude, provides rotation matrix for 
+    transforming a vector from camera frame to ecef frame.
+    """
+    matrix = rotMatrixFromEcefToCamera(longitude, camPoseEcef)
+    return np.transpose(matrix)
     
     
 def pointToTuple(point):
@@ -74,7 +84,7 @@ def imageCoordToEcef(cameraLonLatAlt, pixelCoord, opticalCenter, focalLength):
     cameraPose = Point3(cameraPoseEcef[0], cameraPoseEcef[1], cameraPoseEcef[2])  # ray start is camera position in world coordinates
     dirVector = pixelToVector(opticalCenter, focalLength, pixelCoord)  # vector from center of projection to pixel on image.
     # rotate the direction vector (center of proj to pixel) from camera frame to ecef frame 
-    rotMatrix = rotMatrixFromCameraToEcef(cameraLonLatAlt[0], cameraPoseEcef)
+    rotMatrix = rotMatrixOfCameraInEcef(cameraLonLatAlt[0], cameraPoseEcef)
     dirVector_np = np.array([[dirVector.dx], [dirVector.dy], [dirVector.dz]])         
     dirVecEcef_np = rotMatrix * dirVector_np
     # normalize the direction vector
@@ -93,14 +103,6 @@ def imageCoordToEcef(cameraLonLatAlt, pixelCoord, opticalCenter, focalLength):
         return pointToTuple(ecefCoords)
     else: 
         return None
-
-
-def ecefToImageCoord(pixelCoord, opticalCenter, focalLength):
-    """
-    Transforms image pixel coordinates to ecef.
-    """
-    # create a Plane object representing the image plane
-    return None
 
 
 def getCenterPoint(width, height, mission, roll, frame):
