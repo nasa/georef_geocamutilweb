@@ -11,7 +11,6 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-
 PDF_MIME_TYPES = ('application/pdf',
                   'application/acrobat',
                   'application/nappdf',
@@ -31,12 +30,12 @@ def getAccurateFocalLengths(imageSize, focalLength, sensorSize):
     pixels per meter on the actual CCD sensor.
     """
     w_s = sensorSize[0]  # in meters
-    h_s = sensorSize[0]
+    h_s = sensorSize[1]
     
     w_i = imageSize[0]  # in pixels
     h_i = imageSize[1]
     
-    f = focalLength  # unit less
+    f = focalLength / 1000.0 # milimeters to meters
     
     focalLengthPixelsPerMeter = (w_i / w_s * f, h_i / h_s * f)
     return focalLengthPixelsPerMeter    
@@ -104,7 +103,7 @@ def getImageDataFromImageUrl(imageUrl):
     return imageName, imageFB, imageType, imageId
 
 
-def getImageSizeFromMRF(mission, roll, frame):
+def getImageSize(mission, roll, frame):
     # generate the image url from mrf
     imageUrl = getUrlForImage(mission, roll, frame, 'small')
     # open the image url and retrieve info
@@ -124,20 +123,20 @@ def getImageSizeFromMRF(mission, roll, frame):
     return {'width': width, 'height': height}
 
 
-def getIssImageInfo(mission, roll, frame, width=None, height=None):
+def getIssImageInfo(mission, roll, frame):
     """
     Given Mission, Roll, Frame, returns the image info 
     such as latitude, longitude, altitude of ISS nadir position and
     the initial focal length (these values are fetched from JSC website)
     """
-    if not (width and height): 
-        imageSize = getImageSizeFromMRF(mission, roll, frame)
-        # if getImageSizeFromMRF returned an errorJSON, return right away.
-        if checkIfErrorJSONResponse(imageSize):
-            return imageSize
-        width = imageSize['width']
-        height = imageSize['height']
+    # get image size
+    imageSize = getImageSize(mission, roll, frame)
+    if checkIfErrorJSONResponse(imageSize):
+        return imageSize
+    width = imageSize['width']
+    height = imageSize['height']
                  
+    # fetch meta info from image
     url = getUrlForImageInfo(mission, roll, frame)
     urlpath = urllib2.urlopen(url)
     string = urlpath.read().decode('utf-8') 
@@ -147,7 +146,7 @@ def getIssImageInfo(mission, roll, frame, width=None, height=None):
         paramsDict[param.split(':')[0]] = param.split(':')[-1]
     latitude = None
     longitude = None
-    Altitude = None
+    altitude = None
     initialFocalLength = None
     sensorSize = (.036,.0239)  #TODO: figure out a way to not hard code this.
     for key, value in paramsDict.items():
@@ -160,7 +159,7 @@ def getIssImageInfo(mission, roll, frame, width=None, height=None):
          elif 'Focal length' in key:
              initialFocalLength = float(value.strip())
     focalLength = getAccurateFocalLengths([width, height], initialFocalLength, sensorSize)
-    focalLength = [round(focalLength[0],2), round(focalLength[1],2)]
+    focalLength = [round(focalLength[0]), round(focalLength[1])]
     return {'latitude': float(latitude), 'longitude':  float(longitude), 'altitude': float(altitude), 
             'focalLength': focalLength, 'sensorSize': sensorSize,
             'width': width, 'height': height}

@@ -16,6 +16,7 @@ from geocamUtil.geom3 import Vector3, Point3, Ray3
 from geocamUtil.sphere import Sphere
 from geocamUtil.imageInfo import getIssImageInfo
 from geocamUtil.geomath import EARTH_RADIUS_METERS, transformLonLatAltToEcef, transformEcefToLonLatAlt
+import pydevd
 
 #####################################################
 # Utility functions for image registration in 
@@ -44,11 +45,12 @@ def pixelToVector(opticalCenter, focalLength, pixelCoord):
     return normDir
 
 
-def rotationMatrixToEuler(rotMatrix):
+def eulFromRot(rotMatrix):
+    """
+    Converts rotation matrix into euler angles
+    """
     phi = 0
     omega = np.arcsin(-rotMatrix.item(2,0))
-    print "omega"
-    print omega
     kappa = None;
     
     if np.absolute(omega - (math.pi/2.0)) < 0.0000001:
@@ -61,11 +63,19 @@ def rotationMatrixToEuler(rotMatrix):
     return [phi, omega, kappa]
 
 
-def rotFromEul(row, pitch, yaw):
+def rotFromEul(roll, pitch, yaw):
+    """
+    Converts euler angles to a rotation matrix
+    """
     size = (3,3)
     RX = np.zeros(size)
     RY = np.zeros(size)
     RZ = np.zeros(size)
+    
+    # convert from array to matrix
+    RX = np.matrix(RX)
+    RY = np.matrix(RY)
+    RZ = np.matrix(RZ)
     
     c = np.cos(yaw)
     s = np.sin(yaw)
@@ -83,8 +93,8 @@ def rotFromEul(row, pitch, yaw):
     RY[2,2] = c
     RY[1,1] = 1
     
-    c = np.cos(row)
-    s = np.sin(row)
+    c = np.cos(roll)
+    s = np.sin(roll)
     RX[1,1] = c 
     RX[1,2] = -s
     RX[2,1] = s
@@ -126,7 +136,7 @@ def pointToTuple(point):
     return pointTuple
 
 
-# TODO: http://gis.stackexchange.com/questions/20780/point-of-intersection-for-a-ray-and-earths-surface
+#TODO: http://gis.stackexchange.com/questions/20780/point-of-intersection-for-a-ray-and-earths-surface
 def imageCoordToEcef(cameraLonLatAlt, pixelCoord, opticalCenter, focalLength, rotationMatrix):
     """
     Given the camera position in ecef and image coordinates x,y
