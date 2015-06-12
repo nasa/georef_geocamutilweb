@@ -16,7 +16,6 @@ from geocamUtil.geom3 import Vector3, Point3, Ray3
 from geocamUtil.sphere import Sphere
 from geocamUtil.imageInfo import getIssImageInfo
 from geocamUtil.geomath import EARTH_RADIUS_METERS, transformLonLatAltToEcef, transformEcefToLonLatAlt
-import pydevd
 
 #####################################################
 # Utility functions for image registration in 

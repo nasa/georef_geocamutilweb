@@ -63,8 +63,11 @@ def getUrlForImage(mission, roll, frame, imageSize = 'small'):
     """
     Returns url for iss image.
     """
-    rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ESC/" 
-    return  rootUrl + imageSize + "/" + mission + "/" + mission + "-" + roll + "-" + frame + ".jpg"
+    if (roll == "E") or (roll == "ESC"):
+        rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ESC/small" 
+    else: 
+        rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ISD/lowres"
+    return  rootUrl + "/" + mission + "/" + mission + "-" + roll + "-" + frame + ".jpg"
 
 
 def getImageDataFromImageUrl(imageUrl):
@@ -77,7 +80,6 @@ def getImageDataFromImageUrl(imageUrl):
     if ("eol.jsc.nasa.gov" in imageUrl) or ("eo-web.jsc.nasa.gov" in imageUrl):
         imageName = imageUrl.split("/")[-1]  # get the image id (last elem in list)
         imageId = imageName.split('.')[0]
-    
     # we have a url, try to download it
     try:
         response = urllib2.urlopen(imageUrl)
