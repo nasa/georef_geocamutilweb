@@ -63,10 +63,17 @@ def getUrlForImage(mission, roll, frame, imageSize = 'small'):
     """
     Returns url for iss image.
     """
-    if (roll == "E") or (roll == "ESC"):
-        rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ESC/small" 
+    rootUrl = ""
+    if imageSize == 'small':
+        if (roll == "E") or (roll == "ESC"):
+            rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ESC/small" 
+        else: 
+            rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ISD/lowres"
     else: 
-        rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ISD/lowres"
+        if (roll == "E") or (roll == "ESC"):
+            rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ESC/large" 
+        else: 
+            rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ISD/highres"
     return  rootUrl + "/" + mission + "/" + mission + "-" + roll + "-" + frame + ".jpg"
 
 
