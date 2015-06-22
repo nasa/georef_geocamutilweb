@@ -1283,11 +1283,6 @@ gdal2tiles temp.vrt""" % self.input )
 
                 if self.options.resampling != 'antialias':
                     # Write a copy of tile to png/jpg
-                    print "inside gdal2tiles"
-                    print "tilefilename"
-                    print tilefilename
-                    print "dstile"
-                    print dstile
                     self.out_drv.CreateCopy(tilefilename, dstile, strict=0)
 
                 del dstile
