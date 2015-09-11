@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#! /usr/bin/python
 #******************************************************************************
-#  $Id$
+#  $Id: gdal2tiles.py 25611 2013-02-07 10:24:56Z bishop $
 # 
 # Project:  Google Summer of Code 2007, 2008 (http://code.google.com/soc/)
 # Support:  BRGM (http://www.brgm.fr)
@@ -56,7 +56,7 @@ except:
     # 'antialias' resampling is not available
     pass
 
-__version__ = "$Id$"
+__version__ = "$Id: gdal2tiles.py 25611 2013-02-07 10:24:56Z bishop $"
 
 resampling_list = ('average','near','bilinear','cubic','cubicspline','lanczos','antialias')
 profile_list = ('mercator','geodetic','raster') #,'zoomify')
@@ -75,7 +75,7 @@ Global Map Tiles as defined in Tile Map Service (TMS) Profiles
 Functions necessary for generation of global tiles used on the web.
 It contains classes implementing coordinate conversions for:
 
-  - GlobalMercator (based on EPSG:900913 = EPSG:3785)
+  - GlobalMercator (based on EPSG:3785 = EPSG:3785)
        for Google Maps, Yahoo Maps, Bing Maps compatible tiles
   - GlobalGeodetic (based on EPSG:4326)
        for OpenLayers Base Map and Google Earth compatible tiles
@@ -91,7 +91,7 @@ Created by Klokan Petr Pridal on 2008-07-03.
 Google Summer of Code 2008, project GDAL2Tiles for OSGEO.
 
 In case you use this class in your product, translate it to another language
-or find it usefull for your project please let me know.
+or find it useful for your project please let me know.
 My email: klokan at klokan dot cz.
 I would like to know where it was used.
 
@@ -108,7 +108,7 @@ class GlobalMercator(object):
     ---------------------------
 
   Functions necessary for generation of tiles in Spherical Mercator projection,
-  EPSG:900913 (EPSG:gOOglE, Google Maps Global Mercator), EPSG:3785, OSGEO:41001.
+  EPSG:3785 (EPSG:gOOglE, Google Maps Global Mercator), EPSG:3785, OSGEO:41001.
 
   Such tiles are compatible with Google Maps, Bing Maps, Yahoo Maps,
   UK Ordnance Survey OpenSpace API, ...
@@ -122,23 +122,23 @@ class GlobalMercator(object):
 
      WGS84 coordinates   Spherical Mercator  Pixels in pyramid  Tiles in pyramid
          lat/lon            XY in metres     XY pixels Z zoom      XYZ from TMS 
-        EPSG:4326           EPSG:900913                                         
+        EPSG:4326           EPSG:3785                                         
          .----.              ---------               --                TMS      
         /      \     <->     |       |     <->     /----/    <->      Google    
         \      /             |       |           /--------/          QuadTree   
          -----               ---------         /------------/                   
        KML, public         WebMapService         Web Clients      TileMapService
 
-    What is the coordinate extent of Earth in EPSG:900913?
+    What is the coordinate extent of Earth in EPSG:3785?
 
       [-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244]
       Constant 20037508.342789244 comes from the circumference of the Earth in meters,
       which is 40 thousand kilometers, the coordinate origin is in the middle of extent.
       In fact you can calculate the constant as: 2 * math.pi * 6378137 / 2.0
-      $ echo 180 85 | gdaltransform -s_srs EPSG:4326 -t_srs EPSG:900913
+      $ echo 180 85 | gdaltransform -s_srs EPSG:4326 -t_srs EPSG:3785
       Polar areas with abs(latitude) bigger then 85.05112878 are clipped off.
 
-    What are zoom level constants (pixels/meter) for pyramid with EPSG:900913?
+    What are zoom level constants (pixels/meter) for pyramid with EPSG:3785?
 
       whole region is on top of pyramid (zoom=0) covered by 256x256 pixels tile,
       every lower zoom level resolution is always divided by two
@@ -167,10 +167,10 @@ class GlobalMercator(object):
       of an ellipsoidal projection. The spherical projection causes approximately
       0.33 percent scale distortion in the Y direction, which is not visually noticable.
 
-    How do I create a raster in EPSG:900913 and convert coordinates with PROJ.4?
+    How do I create a raster in EPSG:3785 and convert coordinates with PROJ.4?
 
       You can use standard GIS tools like gdalwarp, cs2cs or gdaltransform.
-      All of the tools supports -t_srs 'epsg:900913'.
+      All of the tools supports -t_srs 'epsg:3785'.
 
       For other GIS programs check the exact definition of the projection:
       More info at http://spatialreference.org/ref/user/google-projection/
@@ -181,7 +181,7 @@ class GlobalMercator(object):
         +proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0
         +k=1.0 +units=m +nadgrids=@null +no_defs
 
-      Human readable WKT format of EPGS:900913:
+      Human readable WKT format of EPGS:3785:
          PROJCS["Google Maps Global Mercator",
              GEOGCS["WGS 84",
                  DATUM["WGS_1984",
@@ -209,7 +209,7 @@ class GlobalMercator(object):
         # 20037508.342789244
 
     def LatLonToMeters(self, lat, lon ):
-        "Converts given lat/lon in WGS84 Datum to XY in Spherical Mercator EPSG:900913"
+        "Converts given lat/lon in WGS84 Datum to XY in Spherical Mercator EPSG:3785"
 
         mx = lon * self.originShift / 180.0
         my = math.log( math.tan((90 + lat) * math.pi / 360.0 )) / (math.pi / 180.0)
@@ -218,7 +218,7 @@ class GlobalMercator(object):
         return mx, my
 
     def MetersToLatLon(self, mx, my ):
-        "Converts XY point from Spherical Mercator EPSG:900913 to lat/lon in WGS84 Datum"
+        "Converts XY point from Spherical Mercator EPSG:3785 to lat/lon in WGS84 Datum"
 
         lon = (mx / self.originShift) * 180.0
         lat = (my / self.originShift) * 180.0
@@ -227,7 +227,7 @@ class GlobalMercator(object):
         return lat, lon
 
     def PixelsToMeters(self, px, py, zoom):
-        "Converts pixel coordinates in given zoom level of pyramid to EPSG:900913"
+        "Converts pixel coordinates in given zoom level of pyramid to EPSG:3785"
 
         res = self.Resolution( zoom )
         mx = px * res - self.originShift
@@ -235,7 +235,7 @@ class GlobalMercator(object):
         return mx, my
 
     def MetersToPixels(self, mx, my, zoom):
-        "Converts EPSG:900913 to pyramid pixel coordinates in given zoom level"
+        "Converts EPSG:3785 to pyramid pixel coordinates in given zoom level"
 
         res = self.Resolution( zoom )
         px = (mx + self.originShift) / res
@@ -262,7 +262,7 @@ class GlobalMercator(object):
         return self.PixelsToTile( px, py)
 
     def TileBounds(self, tx, ty, zoom):
-        "Returns bounds of the given tile in EPSG:900913 coordinates"
+        "Returns bounds of the given tile in EPSG:3785 coordinates"
 
         minx, miny = self.PixelsToMeters( tx*self.tileSize, ty*self.tileSize, zoom )
         maxx, maxy = self.PixelsToMeters( (tx+1)*self.tileSize, (ty+1)*self.tileSize, zoom )
@@ -783,7 +783,7 @@ gdal2tiles temp.vrt""" % self.input )
         self.out_srs = osr.SpatialReference()
 
         if self.options.profile == 'mercator':
-            self.out_srs.ImportFromEPSG(900913)
+            self.out_srs.ImportFromEPSG(3785)
         elif self.options.profile == 'geodetic':
             self.out_srs.ImportFromEPSG(4326)
         else:
@@ -1199,7 +1199,7 @@ gdal2tiles temp.vrt""" % self.input )
                     os.makedirs(os.path.dirname(tilefilename))
 
                 if self.options.profile == 'mercator':
-                    # Tile bounds in EPSG:900913
+                    # Tile bounds in EPSG:3785
                     b = self.mercator.TileBounds(tx, ty, tz)
                 elif self.options.profile == 'geodetic':
                     b = self.geodetic.TileBounds(tx, ty, tz)
@@ -1496,7 +1496,7 @@ gdal2tiles temp.vrt""" % self.input )
         args['profile'] = self.options.profile
 
         if self.options.profile == 'mercator':
-            args['srs'] = "EPSG:900913"
+            args['srs'] = "EPSG:3785"
         elif self.options.profile == 'geodetic':
             args['srs'] = "EPSG:4326"
         elif self.options.s_srs:
@@ -1993,7 +1993,7 @@ gdal2tiles temp.vrt""" % self.input )
                   var options = {
                       div: "map",
                       controls: [],
-                      projection: "EPSG:900913",
+                      projection: "EPSG:3785",
                       displayProjection: new OpenLayers.Projection("EPSG:4326"),
                       numZoomLevels: 20
                   };
