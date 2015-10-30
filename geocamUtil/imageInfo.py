@@ -50,33 +50,6 @@ def validOverlayContentType(contentType):
     return False
 
 
-def getUrlForImageInfo(mission, roll, frame):
-    """
-    Returns url for image info page that includes
-    focal length, iss position, etc.
-    """
-    url = "http://eol.jsc.nasa.gov/GeoCam/PhotoInfo.pl?photo=%s-%s-%s" % (mission, roll, frame)
-    return url
-
-
-def getUrlForImage(mission, roll, frame, imageSize = 'small'):
-    """
-    Returns url for iss image.
-    """
-    rootUrl = ""
-    if imageSize == 'small':
-        if (roll == "E") or (roll == "ESC"):
-            rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ESC/small" 
-        else: 
-            rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ISD/lowres"
-    else: 
-        if (roll == "E") or (roll == "ESC"):
-            rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ESC/large" 
-        else: 
-            rootUrl = "http://eol.jsc.nasa.gov/DatabaseImages/ISD/highres"
-    return  rootUrl + "/" + mission + "/" + mission + "-" + roll + "-" + frame + ".jpg"
-
-
 def getImageDataFromImageUrl(imageUrl):
     """
     Given a url to an image, get imageSize, imageFB, 
@@ -94,13 +67,13 @@ def getImageDataFromImageUrl(imageUrl):
         return ErrorJSONResponse("There was a problem fetching the image at this URL.")
     if response.code != 200:
         return ErrorJSONResponse("There was a problem fetching the image at this URL.")
-     
+      
     if not validOverlayContentType(response.headers.get('content-type')):
         # we didn't receive an image,
         # or we did and the server didn't say so.
         logging.error("Non-image content-type:" + response.headers['Content-Type'].split('/')[0])
         return ErrorJSONResponse("The file at this URL does not seem to be an image.")
-     
+      
     imageSize = int(response.info().get('content-length'))
     if imageSize > settings.MAX_IMPORT_FILE_SIZE:
         return ErrorJSONResponse("The submitted file is larger than the maximum allowed size. " +
@@ -112,11 +85,10 @@ def getImageDataFromImageUrl(imageUrl):
     return imageName, imageFB, imageType, imageId
 
 
-def getImageSize(mission, roll, frame):
+def getImageSize(issImage):
     # generate the image url from mrf
-    imageUrl = getUrlForImage(mission, roll, frame, 'small')
     # open the image url and retrieve info
-    retval = getImageDataFromImageUrl(imageUrl)
+    retval = getImageDataFromImageUrl(issImage.imageUrl)
     if checkIfErrorJSONResponse(retval):
         return retval
     else: 
@@ -132,22 +104,21 @@ def getImageSize(mission, roll, frame):
     return {'width': width, 'height': height}
 
 
-def getIssImageInfo(mission, roll, frame):
+def getIssImageInfo(issImage):
     """
     Given Mission, Roll, Frame, returns the image info 
     such as latitude, longitude, altitude of ISS nadir position and
     the initial focal length (these values are fetched from JSC website)
     """
     # get image size
-    imageSize = getImageSize(mission, roll, frame)
+    imageSize = getImageSize(issImage)
     if checkIfErrorJSONResponse(imageSize):
         return imageSize
     width = imageSize['width']
     height = imageSize['height']
                  
     # fetch meta info from image
-    url = getUrlForImageInfo(mission, roll, frame)
-    urlpath = urllib2.urlopen(url)
+    urlpath = urllib2.urlopen(issImage.infoUrl)
     string = urlpath.read().decode('utf-8') 
     params = string.split('\n')
     paramsDict = {}

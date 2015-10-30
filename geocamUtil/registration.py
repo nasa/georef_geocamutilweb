@@ -161,11 +161,11 @@ def imageCoordToEcef(cameraLonLatAlt, pixelCoord, opticalCenter, focalLength, ro
         return None
 
 
-def getCenterPoint(width, height, mission, roll, frame):
+def getCenterPoint(width, height, issImage):
     """
     Center point is only available if the image has mission, roll, and frame.
     """
-    imageInfo = getIssImageInfo(mission, roll, frame)
+    imageInfo = getIssImageInfo(issImage)
     try: 
         latitude = imageInfo['latitude']
         longitude = imageInfo['longitude']
