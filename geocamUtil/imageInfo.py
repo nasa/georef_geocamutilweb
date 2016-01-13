@@ -116,7 +116,6 @@ def getIssImageInfo(issImage):
         return imageSize
     width = imageSize['width']
     height = imageSize['height']
-                 
     # fetch meta info from image
     urlpath = urllib2.urlopen(issImage.infoUrl)
     string = urlpath.read().decode('utf-8') 
@@ -128,18 +127,22 @@ def getIssImageInfo(issImage):
     longitude = None
     altitude = None
     initialFocalLength = None
+    centerPoint = None
     sensorSize = (.036,.0239)  #TODO: figure out a way to not hard code this.
     for key, value in paramsDict.items():
-         if 'Nadir latitude,longitude in degrees' in key:
-             value = value.strip()
-             latitude = float(value.split(',')[0].strip()) 
-             longitude = float(value.split(',')[1].strip()) 
-         elif 'Spacecraft altitude in nautical miles' in key:
-             altitude = float(value.strip()) * 1609.34  # convert miles to meters
-         elif 'Focal length' in key:
-             initialFocalLength = float(value.strip())
+        if 'Nadir latitude,longitude in degrees' in key:
+            value = value.strip()
+            latitude = float(value.split(',')[0].strip()) 
+            longitude = float(value.split(',')[1].strip()) 
+        elif 'Spacecraft altitude in nautical miles' in key:
+            altitude = float(value.strip()) * 1609.34  # convert miles to meters
+        elif 'Focal length' in key:
+            initialFocalLength = float(value.strip())
+        elif 'Center point' in key:
+            if value:
+               centerPoint = value.strip() 
     focalLength = getAccurateFocalLengths([width, height], initialFocalLength, sensorSize)
     focalLength = [round(focalLength[0]), round(focalLength[1])]
     return {'latitude': float(latitude), 'longitude':  float(longitude), 'altitude': float(altitude), 
             'focalLength': focalLength, 'sensorSize': sensorSize,
-            'width': width, 'height': height}
+            'width': width, 'height': height,'centerPoint': centerPoint}
