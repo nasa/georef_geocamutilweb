@@ -128,6 +128,7 @@ def getIssImageInfo(issImage):
     altitude = None
     initialFocalLength = None
     centerPoint = None
+    date = None
     sensorSize = (.036,.0239)  #TODO: figure out a way to not hard code this.
     for key, value in paramsDict.items():
         if 'Nadir latitude,longitude in degrees' in key:
@@ -141,8 +142,11 @@ def getIssImageInfo(issImage):
         elif 'Center point' in key:
             if value:
                centerPoint = value.strip() 
+        elif 'Photo Date' in key:
+            date = value.strip()
     focalLength = getAccurateFocalLengths([width, height], initialFocalLength, sensorSize)
     focalLength = [round(focalLength[0]), round(focalLength[1])]
     return {'latitude': float(latitude), 'longitude':  float(longitude), 'altitude': float(altitude), 
             'focalLength': focalLength, 'sensorSize': sensorSize,
-            'width': width, 'height': height,'centerPoint': centerPoint}
+            'width': width, 'height': height,'centerPoint': centerPoint, 'date': date}
+    
