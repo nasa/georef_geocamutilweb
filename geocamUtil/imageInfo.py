@@ -22,7 +22,7 @@ PDF_MIME_TYPES = ('application/pdf',
 
 def getAccurateFocalLengths(imageSize, focalLength, sensorSize):
     """
-    Parameters: image size x,y (pixels), focalLength (meters), sensorSize x,y (meters)
+    Parameters: image size x,y (pixels), focalLength (mili meters), sensorSize x,y (meters)
     
     Focal length listed on the image exif is unitless...
     We need focal length in pixels / meters. 
@@ -123,30 +123,40 @@ def getIssImageInfo(issImage):
     paramsDict = {}
     for param in params:
         paramsDict[param.split(':')[0]] = param.split(':')[-1]
-    latitude = None
-    longitude = None
+    
+    nadirLat = None
+    nadirLon = None
+    centerLat = None
+    centerLon = None
     altitude = None
     initialFocalLength = None
-    centerPoint = None
     date = None
+    
     sensorSize = (.036,.0239)  #TODO: figure out a way to not hard code this.
     for key, value in paramsDict.items():
         if 'Nadir latitude,longitude in degrees' in key:
             value = value.strip()
-            latitude = float(value.split(',')[0].strip()) 
-            longitude = float(value.split(',')[1].strip()) 
+            nadirLat = float(value.split(',')[0].strip()) 
+            nadirLon = float(value.split(',')[1].strip()) 
         elif 'Spacecraft altitude in nautical miles' in key:
             altitude = float(value.strip()) * 1609.34  # convert miles to meters
         elif 'Focal length' in key:
             initialFocalLength = float(value.strip())
-        elif 'Center point' in key:
+        elif 'Center point latitude,longitude in degrees' in key:
             if value:
-               centerPoint = value.strip() 
+                try: 
+                    centerPoint = value.strip()
+                    centerLat = float(value.split(',')[0].strip()) 
+                    centerLon =  float(value.split(',')[1].strip()) 
+                except: 
+                    print "center lat and lon are not available. use nadir and calculate the center point instead."
         elif 'Photo Date' in key:
             date = value.strip()
     focalLength = getAccurateFocalLengths([width, height], initialFocalLength, sensorSize)
     focalLength = [round(focalLength[0]), round(focalLength[1])]
-    return {'latitude': float(latitude), 'longitude':  float(longitude), 'altitude': float(altitude), 
+    return {'nadirLat': nadirLat, 'nadirLon':  nadirLon, 'altitude': altitude, 
+            'centerLat': centerLat, 'centerLon': centerLon,
+            'focalLength_unitless': initialFocalLength, # this is the unitless focallength directly from the EOL website (in mm).
             'focalLength': focalLength, 'sensorSize': sensorSize,
             'width': width, 'height': height,'centerPoint': centerPoint, 'date': date}
     

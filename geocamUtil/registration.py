@@ -166,23 +166,23 @@ def getCenterPoint(width, height, issImage):
     Center point is only available if the image has mission, roll, and frame.
     """
     imageInfo = getIssImageInfo(issImage)
-    try: 
-        latitude = imageInfo['latitude']
-        longitude = imageInfo['longitude']
-        altitude = imageInfo['altitude']
+    if imageInfo: 
+        lat = imageInfo['centerLat']
+        lon = imageInfo['centerLon']
+        alt = imageInfo['altitude']
         focalLength = imageInfo['focalLength']
         sensorSize = imageInfo['sensorSize']
-    except Exception as e:
-        errorMsg = "Failed to get ISS image info from ISS MRF. " + str(e)
-        logging.error(errorMsg)
-        print errorMsg
-             
-    longLatAlt = (longitude, latitude, altitude)
-    centerCoords = [width / 2.0, height / 2.0]
-    opticalCenter = (int(width / 2.0) , int(height / 2.0))
-    rotMatrix = rotMatrixOfCameraInEcef(longitude, transformLonLatAltToEcef(longLatAlt))
-    
-    centerPointEcef = imageCoordToEcef(longLatAlt, centerCoords, opticalCenter, focalLength, rotMatrix)       
-    centerPointLonLatAlt = transformEcefToLonLatAlt(centerPointEcef)
-    return {"lon": centerPointLonLatAlt[0], "lat": centerPointLonLatAlt[1], "alt": centerPointLonLatAlt[2]}
+        if (lat is None) or (lon is None):
+            nadirLat = imageInfo['nadirLat']
+            nadirLon = imageInfo['nadirLon']
+            nadirLonLatAlt = (nadirLon, nadirLat, alt)
+            centerCoords = [width / 2.0, height / 2.0]
+            opticalCenter = (int(width / 2.0) , int(height / 2.0))
+            rotMatrix = rotMatrixOfCameraInEcef(nadirLon, transformLonLatAltToEcef(nadirLonLatAlt))
+            centerPointEcef = imageCoordToEcef(nadirLonLatAlt, centerCoords, opticalCenter, focalLength, rotMatrix)       
+            lon, lat, alt = transformEcefToLonLatAlt(centerPointEcef)
+    else: 
+        print "Error: image metadata is not available from the given ISS image ID"
+        return None
+    return {"lon": lon, "lat": lat, "alt": alt}
     
