@@ -11,14 +11,6 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-PDF_MIME_TYPES = ('application/pdf',
-                  'application/acrobat',
-                  'application/nappdf',
-                  'application/x-pdf',
-                  'application/vnd.pdf',
-                  'text/pdf',
-                  'text/x-pdf',
-                  )
 
 def getAccurateFocalLengths(imageSize, focalLength, sensorSize):
     """
@@ -42,7 +34,7 @@ def getAccurateFocalLengths(imageSize, focalLength, sensorSize):
 
 
 def validOverlayContentType(contentType):
-    if settings.PDF_IMPORT_ENABLED and contentType in PDF_MIME_TYPES:
+    if settings.PDF_IMPORT_ENABLED and contentType in settings.PDF_MIME_TYPES:
         # this will change to False when pdf conversion goes away
         return True
     if contentType.startswith('image/'):
@@ -50,10 +42,19 @@ def validOverlayContentType(contentType):
     return False
 
 
-def getImageDataFromImageUrl(imageUrl):
+class dotdict(dict):
+    """dot.notation access to dictionary attributes"""
+    def __getattr__(self, attr):
+        return self.get(attr)
+    __setattr__= dict.__setitem__
+    __delattr__= dict.__delitem__
+    
+
+def getImageFile(imageUrl):
+
     """
-    Given a url to an image, get imageSize, imageFB, 
-    imageType, and imageName needed for constructing the overlay. 
+    Given a url to an image, get 
+    file, size, type, name needed for constructing the overlay. 
     """
     imageId = None  # mission-roll-frame
     # if url is from eol website, extract the image id.
@@ -78,30 +79,27 @@ def getImageDataFromImageUrl(imageUrl):
     if imageSize > settings.MAX_IMPORT_FILE_SIZE:
         return ErrorJSONResponse("The submitted file is larger than the maximum allowed size. " +
                                  "Maximum size is %d bytes." % settings.MAX_IMPORT_FILE_SIZE)
-    imageFB = StringIO(response.read())
-    imageType = response.headers['Content-Type']
-    imageName = imageUrl.split('/')[-1]
+    file = StringIO(response.read())
+    type = response.headers['Content-Type']
+    name = imageUrl.split('/')[-1]
     response.close()
-    return imageName, imageFB, imageType, imageId
+    return dotdict({'name': name, 'file': file, 'content_type': type, 'id': imageId})
 
 
-def getImageSize(issImage):
+def getImageWidthHeight(issImage):
     # generate the image url from mrf
     # open the image url and retrieve info
-    retval = getImageDataFromImageUrl(issImage.imageUrl)
+    retval = getImageFile(issImage.imageUrl)
     if checkIfErrorJSONResponse(retval):
         return retval
-    else: 
-        imageName, imageFB, imageType, imageId = retval
     # get image bits
-    bits = imageFB.read()
+    bits = retval.file.read()
     try:  # open it as a PIL image
         image = PIL.Image.open(StringIO(bits))
     except Exception as e:  # pylint: disable=W0703
         logging.error("PIL failed to open image: " + str(e))
         return ErrorJSONResponse("There was a problem reading the image.")
-    width, height = image.size
-    return {'width': width, 'height': height}
+    return image.size
 
 
 def getIssImageInfo(issImage):
@@ -111,11 +109,9 @@ def getIssImageInfo(issImage):
     the initial focal length (these values are fetched from JSC website)
     """
     # get image size
-    imageSize = getImageSize(issImage)
+    imageSize = getImageWidthHeight(issImage)
     if checkIfErrorJSONResponse(imageSize):
         return imageSize
-    width = imageSize['width']
-    height = imageSize['height']
     # fetch meta info from image
     urlpath = urllib2.urlopen(issImage.infoUrl)
     string = urlpath.read().decode('utf-8') 
@@ -152,11 +148,11 @@ def getIssImageInfo(issImage):
                     print "center lat and lon are not available. use nadir and calculate the center point instead."
         elif 'Photo Date' in key:
             date = value.strip()
-    focalLength = getAccurateFocalLengths([width, height], initialFocalLength, sensorSize)
+    focalLength = getAccurateFocalLengths(imageSize, initialFocalLength, sensorSize)
     focalLength = [round(focalLength[0]), round(focalLength[1])]
     return {'nadirLat': nadirLat, 'nadirLon':  nadirLon, 'altitude': altitude, 
             'centerLat': centerLat, 'centerLon': centerLon,
             'focalLength_unitless': initialFocalLength, # this is the unitless focallength directly from the EOL website (in mm).
             'focalLength': focalLength, 'sensorSize': sensorSize,
-            'width': width, 'height': height,'centerPoint': centerPoint, 'date': date}
+            'width': imageSize[0], 'height': imageSize[1],'centerPoint': centerPoint, 'date': date}
     
