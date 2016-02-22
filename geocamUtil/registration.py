@@ -10,7 +10,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from geocamTiePoint import settings
+from django.conf import settings
 
 from geocamUtil.geom3 import Vector3, Point3, Ray3
 from geocamUtil.sphere import Sphere

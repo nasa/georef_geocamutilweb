@@ -9,7 +9,7 @@ import datetime
 import calendar
 import re
 
-import iso8601
+# import iso8601
 try:
     import pytz
 except ImportError:
@@ -156,29 +156,29 @@ def parseCsvTime(timeStr):
     return datetime.datetime.strptime(timeStr, '%Y-%m-%d %H:%M:%S')
 
 
-def parseUploadTime(timeStr):
-    try:
-        # format used by GeoCam Mobile 2009
-        return parseCsvTime(timeStr)
-    except ValueError:
-        pass
-
-    try:
-        # ISO 8601 format we should probably use in the future
-        return iso8601.parse_date(timeStr)
-    except iso8601.ParseError:
-        pass
-
-    try:
-        # POSIX time stamp may be easier to produce for some clients
-        posixTimeStamp = float(timeStr)
-    except ValueError:
-        pass
-    else:
-        return datetime.datetime.fromtimestamp(posixTimeStamp)
-
-    # hm, nothing worked
-    raise ValueError('could not parse datetime from %s' % timeStr)
+# def parseUploadTime(timeStr):
+#     try:
+#         # format used by GeoCam Mobile 2009
+#         return parseCsvTime(timeStr)
+#     except ValueError:
+#         pass
+# 
+#     try:
+#         # ISO 8601 format we should probably use in the future
+#         return iso8601.parse_date(timeStr)
+#     except iso8601.ParseError:
+#         pass
+# 
+#     try:
+#         # POSIX time stamp may be easier to produce for some clients
+#         posixTimeStamp = float(timeStr)
+#     except ValueError:
+#         pass
+#     else:
+#         return datetime.datetime.fromtimestamp(posixTimeStamp)
+# 
+#     # hm, nothing worked
+#     raise ValueError('could not parse datetime from %s' % timeStr)
 
 
 def getTimeShort(utcDt, tz=None, now=None):

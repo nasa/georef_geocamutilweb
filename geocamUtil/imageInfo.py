@@ -3,7 +3,7 @@ import PIL
 import urllib2
 import logging
 import PIL.Image
-from geocamTiePoint import settings
+from django.conf import settings
 from geocamUtil.ErrorJSONResponse import ErrorJSONResponse, checkIfErrorJSONResponse
 
 try:

@@ -1,7 +1,7 @@
 # __BEGIN_LICENSE__
-# Copyright (C) 2008-2010 United States Government as represented by
-# the Administrator of the National Aeronautics and Space Administration.
-# All Rights Reserved.
+#Copyright (c) 2015, United States Government, as represented by the 
+#Administrator of the National Aeronautics and Space Administration. 
+#All rights reserved.
 # __END_LICENSE__
 
 import re
@@ -10,8 +10,8 @@ from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
-from geocamUtil.middleware.SecurityMiddleware import requestIsSecure
-from geocamUtil import settings
+from geocamUtil.middleware.security import requestIsSecure
+from django.conf import settings
 
 register = template.Library()
 

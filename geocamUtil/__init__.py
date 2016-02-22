@@ -36,4 +36,4 @@ def get_version():
 
 __version__ = get_version()
 
-settings = MultiSettings(django.conf.settings, defaultSettings)
+#settings = MultiSettings(django.conf.settings, defaultSettings)
