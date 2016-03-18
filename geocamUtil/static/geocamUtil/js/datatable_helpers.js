@@ -63,6 +63,9 @@ defaultOptions = {
         bSort: true,
         bJQueryUI: false,
         sScrollY:  calcDataTableHeight(),
+        "columnDefs": [
+                       {"className": "dt-center", "targets": "_all"}
+                     ],
         "lengthMenu": [[10, 20, 40, -1], [10, 20, 40, "All"]],
         "oLanguage": {
             "sLengthMenu": "Display _MENU_"

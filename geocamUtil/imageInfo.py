@@ -11,7 +11,6 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-
 def getAccurateFocalLengths(imageSize, focalLength, sensorSize):
     """
     Parameters: image size x,y (pixels), focalLength (mili meters), sensorSize x,y (meters)
@@ -51,12 +50,12 @@ class dotdict(dict):
     
 
 def getImageFile(imageUrl):
-
     """
     Given a url to an image, get 
     file, size, type, name needed for constructing the overlay. 
     """
     imageId = None  # mission-roll-frame
+    imageDict = {}
     # if url is from eol website, extract the image id.
     if ("eol.jsc.nasa.gov" in imageUrl) or ("eo-web.jsc.nasa.gov" in imageUrl):
         imageName = imageUrl.split("/")[-1]  # get the image id (last elem in list)
@@ -83,7 +82,8 @@ def getImageFile(imageUrl):
     type = response.headers['Content-Type']
     name = imageUrl.split('/')[-1]
     response.close()
-    return dotdict({'name': name, 'file': file, 'content_type': type, 'id': imageId})
+    imageDict = {'name': name, 'file': file, 'content_type': type, 'id': imageId}
+    return dotdict(imageDict)
 
 
 def getImageWidthHeight(issImage):
@@ -102,57 +102,46 @@ def getImageWidthHeight(issImage):
     return image.size
 
 
-def getIssImageInfo(issImage):
+def constructExtrasDict(infoUrl):
     """
-    Given Mission, Roll, Frame, returns the image info 
-    such as latitude, longitude, altitude of ISS nadir position and
-    the initial focal length (these values are fetched from JSC website)
+    Helper that takes the image info script output from JSC and constructs a python dict.
     """
-    # get image size
-    imageSize = getImageWidthHeight(issImage)
-    if checkIfErrorJSONResponse(imageSize):
-        return imageSize
-    # fetch meta info from image
-    urlpath = urllib2.urlopen(issImage.infoUrl)
+    urlpath = urllib2.urlopen(infoUrl)
     string = urlpath.read().decode('utf-8') 
     params = string.split('\n')
-    paramsDict = {}
+    extrasDict = {'id': None, 'nadirLat': None, 'nadirLon': None, 'centerLat': None, 
+                  'centerLon': None, 'altitude': None, 'azimuth': None, 'sunElevationDeg': None, 
+                  'focalLength_unitless': None, 'focalLength': None, 'camera': None, 
+                  'acquisitionDate': None, 'acquisitionTime': None}
     for param in params:
-        paramsDict[param.split(':')[0]] = param.split(':')[-1]
-    
-    nadirLat = None
-    nadirLon = None
-    centerLat = None
-    centerLon = None
-    altitude = None
-    initialFocalLength = None
-    date = None
-    
-    sensorSize = (.036,.0239)  #TODO: figure out a way to not hard code this.
-    for key, value in paramsDict.items():
-        if 'Nadir latitude,longitude in degrees' in key:
-            value = value.strip()
-            nadirLat = float(value.split(',')[0].strip()) 
-            nadirLon = float(value.split(',')[1].strip()) 
-        elif 'Spacecraft altitude in nautical miles' in key:
-            altitude = float(value.strip()) * 1609.34  # convert miles to meters
-        elif 'Focal length' in key:
-            initialFocalLength = float(value.strip())
-        elif 'Center point latitude,longitude in degrees' in key:
-            if value:
-                try: 
-                    centerPoint = value.strip()
-                    centerLat = float(value.split(',')[0].strip()) 
-                    centerLon =  float(value.split(',')[1].strip()) 
-                except: 
-                    print "center lat and lon are not available. use nadir and calculate the center point instead."
-        elif 'Photo Date' in key:
-            date = value.strip()
-    focalLength = getAccurateFocalLengths(imageSize, initialFocalLength, sensorSize)
-    focalLength = [round(focalLength[0]), round(focalLength[1])]
-    return {'nadirLat': nadirLat, 'nadirLon':  nadirLon, 'altitude': altitude, 
-            'centerLat': centerLat, 'centerLon': centerLon,
-            'focalLength_unitless': initialFocalLength, # this is the unitless focallength directly from the EOL website (in mm).
-            'focalLength': focalLength, 'sensorSize': sensorSize,
-            'width': imageSize[0], 'height': imageSize[1],'centerPoint': centerPoint, 'date': date}
-    
+        splitLine = param.split(':')
+        key = splitLine[0]
+        value = splitLine[1:]
+        if "Photo" == key:
+            extrasDict['id'] = value[0].strip()  
+        elif "Nadir latitude,longitude in degrees" in key:
+            value = value[0].strip()
+            extrasDict['nadirLat'] = float(value.split(',')[0].strip()) 
+            extrasDict['nadirLon'] = float(value.split(',')[1].strip()) 
+        elif "Center point latitude,longitude in degrees" in key:
+            try: 
+                centerPoint = value[0].strip()
+                extrasDict['centerLat'] = float(value[0].split(',')[0].strip()) 
+                extrasDict['centerLon'] =  float(value[0].split(',')[1].strip()) 
+            except: 
+                print "center lat and lon are not available. use nadir and calculate the center point instead."
+        elif "Spacecraft altitude in nautical miles" in key:
+            extrasDict['altitude'] = float(value[0].strip()) * 1609.34  # convert miles to meters
+        elif "Sun azimuth" in key:
+            extrasDict['azimuth'] = float(value[0].strip())
+        elif "Sun elevation angle" in key:
+            extrasDict['sunElevationDeg'] = float(value[0].strip())
+        elif "Focal length in millimeters" in key:
+            extrasDict['focalLength_unitless'] = float(value[0].strip())
+        elif "Camera" in key:
+            extrasDict['camera'] = value[0].strip()
+        elif "Photo Date" == key:
+            extrasDict['acquisitionDate'] = value[0].strip()
+        elif "Photo Time" == key:
+            extrasDict['acquisitionTime'] = value[0].strip()
+    return dotdict(extrasDict)

@@ -14,7 +14,6 @@ from django.conf import settings
 
 from geocamUtil.geom3 import Vector3, Point3, Ray3
 from geocamUtil.sphere import Sphere
-from geocamUtil.imageInfo import getIssImageInfo
 from geocamUtil.geomath import EARTH_RADIUS_METERS, transformLonLatAltToEcef, transformEcefToLonLatAlt
 
 #####################################################
@@ -161,23 +160,22 @@ def imageCoordToEcef(cameraLonLatAlt, pixelCoord, opticalCenter, focalLength, ro
         return None
 
 
-def getCenterPoint(width, height, issImage):
+def getCenterPoint(issImage):
     """
     Center point is only available if the image has mission, roll, and frame.
     """
-    imageInfo = getIssImageInfo(issImage)
-    if imageInfo: 
-        lat = imageInfo['centerLat']
-        lon = imageInfo['centerLon']
-        alt = imageInfo['altitude']
-        focalLength = imageInfo['focalLength']
-        sensorSize = imageInfo['sensorSize']
+    if issImage: 
+        lat = issImage.extras.centerLat
+        lon = issImage.extras.centerLon
+        alt = issImage.extras.altitude
+        focalLength = issImage.extras.focalLength
+        sensorSize = issImage.extras.sensorSize
         if (lat is None) or (lon is None):
-            nadirLat = imageInfo['nadirLat']
-            nadirLon = imageInfo['nadirLon']
+            nadirLat = issImage.extras.nadirLat
+            nadirLon = issImage.extras.nadirLon
             nadirLonLatAlt = (nadirLon, nadirLat, alt)
-            centerCoords = [width / 2.0, height / 2.0]
-            opticalCenter = (int(width / 2.0) , int(height / 2.0))
+            centerCoords = [issImage.width / 2.0, issImage.height / 2.0]
+            opticalCenter = (int(issImage.width / 2.0) , int(issImage.height / 2.0))
             rotMatrix = rotMatrixOfCameraInEcef(nadirLon, transformLonLatAltToEcef(nadirLonLatAlt))
             centerPointEcef = imageCoordToEcef(nadirLonLatAlt, centerCoords, opticalCenter, focalLength, rotMatrix)       
             lon, lat, alt = transformEcefToLonLatAlt(centerPointEcef)
