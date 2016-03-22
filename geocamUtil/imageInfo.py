@@ -11,6 +11,7 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+
 def getAccurateFocalLengths(imageSize, focalLength, sensorSize):
     """
     Parameters: image size x,y (pixels), focalLength (mili meters), sensorSize x,y (meters)
@@ -72,8 +73,7 @@ def getImageFile(imageUrl):
         # we didn't receive an image,
         # or we did and the server didn't say so.
         logging.error("Non-image content-type:" + response.headers['Content-Type'].split('/')[0])
-        return ErrorJSONResponse("The file at this URL does not seem to be an image.")
-      
+        return ErrorJSONResponse("The file at this URL does not seem to be an image.")  
     imageSize = int(response.info().get('content-length'))
     if imageSize > settings.MAX_IMPORT_FILE_SIZE:
         return ErrorJSONResponse("The submitted file is larger than the maximum allowed size. " +
