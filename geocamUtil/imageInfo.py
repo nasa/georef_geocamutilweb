@@ -129,6 +129,8 @@ def constructExtrasDict(infoUrl):
                 extrasDict['centerLat'] = float(value[0].split(',')[0].strip()) 
                 extrasDict['centerLon'] =  float(value[0].split(',')[1].strip()) 
             except: 
+                extrasDict['centerLat'] = None
+                extrasDict['centerLon'] = None
                 print "center lat and lon are not available. use nadir and calculate the center point instead."
         elif "Spacecraft altitude in nautical miles" in key:
             extrasDict['altitude'] = float(value[0].strip()) * 1609.34  # convert miles to meters
