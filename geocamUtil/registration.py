@@ -16,11 +16,11 @@ from geocamUtil.geom3 import Vector3, Point3, Ray3
 from geocamUtil.sphere import Sphere
 from geocamUtil.geomath import EARTH_RADIUS_METERS, transformLonLatAltToEcef, transformEcefToLonLatAlt
 
+
 #####################################################
 # Utility functions for image registration in 
 # geocamspace geoRef ground tool.
 #####################################################
-
 
 def degreesToRadians(degrees):
     return degrees * (np.pi / 180.)
