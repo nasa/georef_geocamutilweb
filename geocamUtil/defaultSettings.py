@@ -105,4 +105,4 @@ If live mode is true, various live feed data can send inputs to site and
      'geocamUtil.context_processors.SettingsContextProcessor.SettingsContextProcessor'
  """
 
-GEOCAM_UTIL_ZMQ_PORTS_PATH = "/home/vagrant/georef/apps/georefApp/ports.json"
+GEOCAM_UTIL_ZMQ_PORTS_PATH = "/home/geocam/georef/apps/georefApp/ports.json"
