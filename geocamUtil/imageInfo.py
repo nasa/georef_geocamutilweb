@@ -109,14 +109,26 @@ def constructExtrasDict(infoUrl):
     urlpath = urllib2.urlopen(infoUrl)
     string = urlpath.read().decode('utf-8') 
     params = string.split('\n')
-    extrasDict = {'id': None, 'nadirLat': None, 'nadirLon': None, 'centerLat': None, 
-                  'centerLon': None, 'altitude': None, 'azimuth': None, 'sunElevationDeg': None, 
-                  'focalLength_unitless': None, 'focalLength': None, 'camera': None, 
-                  'acquisitionDate': None, 'acquisitionTime': None}
+    extrasDict = {'id': None, 
+                  'nadirLat': None, 
+                  'nadirLon': None, 
+                  'centerLat': None, 
+                  'centerLon': None, 
+                  'altitude': None, 
+                  'azimuth': None, 
+                  'sunElevationDeg': None, 
+                  'focalLength_unitless': None, 
+                  'focalLength': None, 
+                  'camera': None, 
+                  'acquisitionDate': None, 
+                  'acquisitionTime': None}
     for param in params:
         splitLine = param.split(':')
-        key = splitLine[0]
-        value = splitLine[1:]
+        try: 
+            key = splitLine[0]
+            value = splitLine[1:]
+        except: 
+            continue
         if "Photo" == key:
             extrasDict['id'] = value[0].strip()  
         elif "Nadir latitude,longitude in degrees" in key:
