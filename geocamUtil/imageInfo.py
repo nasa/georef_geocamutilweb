@@ -132,9 +132,12 @@ def constructExtrasDict(infoUrl):
         if "Photo" == key:
             extrasDict['id'] = value[0].strip()  
         elif "Nadir latitude,longitude in degrees" in key:
-            value = value[0].strip()
-            extrasDict['nadirLat'] = float(value.split(',')[0].strip()) 
-            extrasDict['nadirLon'] = float(value.split(',')[1].strip()) 
+            try: 
+                value = value[0].strip()
+                extrasDict['nadirLat'] = float(value.split(',')[0].strip()) 
+                extrasDict['nadirLon'] = float(value.split(',')[1].strip())
+            except:
+                continue 
         elif "Center point latitude,longitude in degrees" in key:
             try: 
                 centerPoint = value[0].strip()
@@ -145,17 +148,38 @@ def constructExtrasDict(infoUrl):
                 extrasDict['centerLon'] = None
                 print "center lat and lon are not available. use nadir and calculate the center point instead."
         elif "Spacecraft altitude in nautical miles" in key:
-            extrasDict['altitude'] = float(value[0].strip()) * 1609.34  # convert miles to meters
+            try: 
+                extrasDict['altitude'] = float(value[0].strip()) * 1609.34  # convert miles to meters
+            except: 
+                continue
         elif "Sun azimuth" in key:
-            extrasDict['azimuth'] = float(value[0].strip())
+            try: 
+                extrasDict['azimuth'] = float(value[0].strip())
+            except:
+                continue
         elif "Sun elevation angle" in key:
-            extrasDict['sunElevationDeg'] = float(value[0].strip())
+            try: 
+                extrasDict['sunElevationDeg'] = float(value[0].strip())
+            except:
+                continue
         elif "Focal length in millimeters" in key:
-            extrasDict['focalLength_unitless'] = float(value[0].strip())
+            try: 
+                extrasDict['focalLength_unitless'] = float(value[0].strip())
+            except:
+                continue
         elif "Camera" in key:
-            extrasDict['camera'] = value[0].strip()
+            try: 
+                extrasDict['camera'] = value[0].strip()
+            except:
+                continue
         elif "Photo Date" == key:
-            extrasDict['acquisitionDate'] = value[0].strip()
+            try:
+                extrasDict['acquisitionDate'] = value[0].strip()
+            except:
+                continue
         elif "Photo Time" == key:
-            extrasDict['acquisitionTime'] = value[0].strip()
+            try: 
+                extrasDict['acquisitionTime'] = value[0].strip()
+            except:
+                continue
     return dotdict(extrasDict)
