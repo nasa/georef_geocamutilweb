@@ -130,7 +130,10 @@ def constructExtrasDict(infoUrl):
         except: 
             continue
         if "Photo" == key:
-            extrasDict['id'] = value[0].strip()  
+            try:
+                extrasDict['id'] = value[0].strip()  
+            except: 
+                continue
         elif "Nadir latitude,longitude in degrees" in key:
             try: 
                 value = value[0].strip()
