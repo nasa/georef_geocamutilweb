@@ -1,7 +1,7 @@
 # __BEGIN_LICENSE__
-# Copyright (C) 2008-2010 United States Government as represented by
-# the Administrator of the National Aeronautics and Space Administration.
-# All Rights Reserved.
+#Copyright (c) 2015, United States Government, as represented by the 
+#Administrator of the National Aeronautics and Space Administration. 
+#All rights reserved.
 # __END_LICENSE__
 
 import os
@@ -11,17 +11,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from geocamUtil.management.commandUtil import getSiteDir
-
-
-def dosys(cmd, verbosity):
-    if verbosity > 1:
-        print >> sys.stderr, cmd
-    ret = os.system(cmd)
-    if ret != 0:
-        if verbosity > 1:
-            print >> sys.stderr, 'command exited with non-zero return value %s' % ret
-    return ret
+from geocamUtil.management.commandUtil import getSiteDir, dosys
 
 
 class Command(BaseCommand):
