@@ -1,3 +1,5 @@
+# __NO_RELICENSE__
+
 import time
 import cProfile
 
