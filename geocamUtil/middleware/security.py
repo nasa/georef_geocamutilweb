@@ -1,18 +1,8 @@
-#__BEGIN_LICENSE__
-# Copyright (c) 2017, United States Government, as represented by the
-# Administrator of the National Aeronautics and Space Administration.
-# All rights reserved.
-#
-# The GeoRef platform is licensed under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# http://www.apache.org/licenses/LICENSE-2.0.
-#
-# Unless required by applicable law or agreed to in writing, software distributed
-# under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-# CONDITIONS OF ANY KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations under the License.
-#__END_LICENSE__
+# __BEGIN_LICENSE__
+#Copyright (c) 2015, United States Government, as represented by the 
+#Administrator of the National Aeronautics and Space Administration. 
+#All rights reserved.
+# __END_LICENSE__
 
 import re
 import sys
@@ -38,6 +28,7 @@ except ImportError:
         return request.get_host()
 
 from django.conf import settings
+
 # stop pylint from warning about too many return statements; it's good
 # style in this case
 # pylint: disable=R0911
@@ -96,7 +87,7 @@ def deprecateCheck(msg):
     if b is 'ok':
         return (True, None)
     else:
-        print >> sys.stderr, 'geocamUtil.middleware.SecurityMiddleware: Using deprecated feature: %s' % msg
+#         print >> sys.stderr, 'geocamUtil.middleware.SecurityMiddleware: Using deprecated feature: %s' % msg
         if b is 'warn':
             return (True, None)
         elif b is 'disable':
@@ -604,14 +595,14 @@ class SecurityMiddleware(object):
 
         if isinstance(response, HttpResponseRedirect) and request.method == "POST":
             try:
-                redirectTo = request.REQUEST.get('next', None)
+                redirectTo = request.GET.get('next', None)
             except:  # pylint: disable=W0702
                 # probably badly formed request content -- log error and don't worry about it
                 errClass, errObject, errTB = sys.exc_info()[:3]
                 traceback.print_tb(errTB)
-                print >> sys.stderr, '%s.%s: %s' % (errClass.__module__,
-                                                    errClass.__name__,
-                                                    str(errObject))
+#                 print >> sys.stderr, '%s.%s: %s' % (errClass.__module__,
+#                                                     errClass.__name__,
+#                                                     str(errObject))
                 return response
             print >> sys.stderr, 'redirectTo:', redirectTo
             print >> sys.stderr, 'next:', request.GET.get('next')
