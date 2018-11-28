@@ -82,8 +82,10 @@ def getImageFile(imageUrl):
     try:
         response = urllib2.urlopen(imageUrl)
     except urllib2.HTTPError as e:
+        logging.error("getImageFile failed to fetch "+imageUrl+" "+str(e))
         return ErrorJSONResponse("There was a problem fetching the image at this URL.")
     if response.code != 200:
+        logging.error("getImageFile failed to fetch "+imageUrl+" giving HTTP response code "+str(response.code))
         return ErrorJSONResponse("There was a problem fetching the image at this URL.")
       
     if not validOverlayContentType(response.headers.get('content-type')):
@@ -93,6 +95,7 @@ def getImageFile(imageUrl):
         return ErrorJSONResponse("The file at this URL does not seem to be an image.")  
     imageSize = int(response.info().get('content-length'))
     if imageSize > settings.MAX_IMPORT_FILE_SIZE:
+        logging.error("The submitted file is larger than the maximum allowed size. Maximum size is %d bytes." % settings.MAX_IMPORT_FILE_SIZE)
         return ErrorJSONResponse("The submitted file is larger than the maximum allowed size. " +
                                  "Maximum size is %d bytes." % settings.MAX_IMPORT_FILE_SIZE)
     file = StringIO(response.read())
